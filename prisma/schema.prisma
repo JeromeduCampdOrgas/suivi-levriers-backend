@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  OWNER
+  TRAINER
+  GUEST
+}
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+model User {
+  id           String     @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String     @unique
+  phone        String?
+  passwordHash String
+  roles        UserRole[]
+
+  ownedDogs   Dog[] @relation("DogOwner")
+  trainedDogs Dog[] @relation("DogTrainers")
+
+  clubLinks UserClub[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Club {
+  id      String  @id @default(cuid())
+  name    String
+  city    String?
+  country String?
+
+  userLinks UserClub[]
+  dogs      Dog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Dog {
+  id        String    @id @default(cuid())
+  name      String
+  breed     String
+  sex       Sex
+  birthDate DateTime?
+  weight    Float?
+  fapac     String?
+
+  ownerId String
+  owner   User   @relation("DogOwner", fields: [ownerId], references: [id])
+
+  trainers User[] @relation("DogTrainers")
+
+  clubId String?
+  club   Club?   @relation(fields: [clubId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserClub {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  joinedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, clubId])
+}
