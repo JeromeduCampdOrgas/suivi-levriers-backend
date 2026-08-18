@@ -10,3 +10,6 @@ node_modules
 .agents/
 .claude/
 .windsurf/
+
+# Build output
+dist/
