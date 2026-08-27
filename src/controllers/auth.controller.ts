@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
-import { registerUser, loginUser, getUserById } from "../services/auth.service";
+import { registerUser, loginUser } from "../services/auth.service";
+import { getUserById } from "../services/user.service";
 import type { AuthenticatedRequest } from "../middlewares/auth.middleware";
 
 export async function register(req: Request, res: Response) {

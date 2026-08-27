@@ -119,21 +119,3 @@ export async function loginUser(data: LoginData) {
     },
   };
 }
-
-export async function getUserById(userId: string) {
-  return prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      roles: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-}
