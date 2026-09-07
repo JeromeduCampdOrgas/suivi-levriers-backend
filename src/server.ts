@@ -10,11 +10,14 @@ import userRoutes from "./routes/user.routes";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+
+const PORT = Number(process.env.PORT) || 4000;
+
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: FRONTEND_URL,
     credentials: true,
   })
 );
@@ -38,6 +41,6 @@ app.use("/api/users", userRoutes);
 /*** Dog Routes */
 app.use("/api/dogs", dogRoutes);
 
-app.listen(PORT, () => {
-  console.log(`API démarrée sur http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`API démarrée sur le port ${PORT}`);
 });
