@@ -9,18 +9,6 @@ if (!connectionString) {
   throw new Error("DATABASE_URL n'est pas définie");
 }
 
-try {
-  const url = new URL(connectionString);
-
-  console.log("=== CONFIGURATION DATABASE ===");
-  console.log("Host :", url.hostname);
-  console.log("Port :", url.port);
-  console.log("Database :", url.pathname);
-  console.log("==============================");
-} catch {
-  console.error("DATABASE_URL invalide");
-}
-
 const adapter = new PrismaPg({
   connectionString,
   ssl: {
@@ -31,15 +19,5 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({
   adapter,
 });
-
-prisma
-  .$connect()
-  .then(() => {
-    console.log("=== CONNEXION SUPABASE OK ===");
-  })
-  .catch((error) => {
-    console.error("=== ERREUR CONNEXION SUPABASE ===");
-    console.error(error);
-  });
 
 export default prisma;
