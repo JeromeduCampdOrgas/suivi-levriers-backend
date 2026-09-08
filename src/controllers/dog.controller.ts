@@ -98,7 +98,7 @@ export async function createDogController(
       });
     }
 
-    const { name, breed, sex, birthDate, weight, icad, ownerId, clubId } =
+    const { name, breed, sex, birthDate, weight, ICAD, ownerId, clubId } =
       req.body;
 
     // Validation des champs obligatoires
@@ -201,7 +201,7 @@ export async function createDogController(
       sex: sex as Sex,
       birthDate: parsedBirthDate,
       weight: parsedWeight,
-      icad: typeof icad === "string" ? icad.trim() || null : null,
+      ICAD: typeof ICAD === "string" ? ICAD.trim() || null : null,
       ownerId,
       clubId: typeof clubId === "string" ? clubId : null,
     });
@@ -249,7 +249,7 @@ export async function updateDogController(
       });
     }
 
-    const { name, breed, sex, birthDate, weight, icad, ownerId, clubId } =
+    const { name, breed, sex, birthDate, weight, ICAD, ownerId, clubId } =
       req.body;
 
     if (
@@ -380,8 +380,8 @@ export async function updateDogController(
       ...(weight !== undefined && {
         weight: parsedWeight,
       }),
-      ...(icad !== undefined && {
-        icad: typeof icad === "string" ? icad.trim() || null : null,
+      ...(ICAD !== undefined && {
+        ICAD: typeof ICAD === "string" ? ICAD.trim() || null : null,
       }),
       ...(ownerId !== undefined && {
         ownerId,

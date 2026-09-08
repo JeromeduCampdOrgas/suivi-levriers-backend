@@ -10,7 +10,7 @@ export interface CreateDogData {
   sex: Sex;
   birthDate?: Date | null;
   weight?: number | null;
-  icad?: string | null;
+  ICAD?: string | null;
   ownerId: string;
   clubId?: string | null;
 }
@@ -24,7 +24,7 @@ export interface UpdateDogData {
   sex?: Sex;
   birthDate?: Date | null;
   weight?: number | null;
-  icad?: string | null;
+  ICAD?: string | null;
   ownerId?: string;
   clubId?: string | null;
 }
@@ -204,7 +204,7 @@ export async function createDog(data: CreateDogData) {
       sex: data.sex,
       birthDate: data.birthDate ?? null,
       weight: data.weight ?? null,
-      icad: data.icad ?? null,
+      ICAD: data.ICAD ?? null,
       ownerId: data.ownerId,
       clubId: data.clubId ?? null,
     },
@@ -288,8 +288,8 @@ export async function updateDog(dogId: string, data: UpdateDogData) {
       ...(data.weight !== undefined && {
         weight: data.weight,
       }),
-      ...(data.icad !== undefined && {
-        icad: data.icad,
+      ...(data.ICAD !== undefined && {
+        ICAD: data.ICAD,
       }),
       ...(data.ownerId !== undefined && {
         ownerId: data.ownerId,
