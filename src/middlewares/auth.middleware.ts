@@ -1,11 +1,12 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import type { UserRole } from "../generated/prisma/client";
 
 export type AuthenticatedRequest = Request & {
   user?: {
     userId: string;
     email: string;
-    roles: string[];
+    roles: UserRole[];
   };
 };
 
@@ -47,10 +48,24 @@ export function authenticateToken(
       });
     }
 
+    const roles = decoded.roles.filter(
+      (role): role is UserRole =>
+        role === "ADMIN" ||
+        role === "OWNER" ||
+        role === "TRAINER" ||
+        role === "GUEST"
+    );
+
+    if (roles.length !== decoded.roles.length) {
+      return res.status(401).json({
+        message: "Token invalide : rôle inconnu.",
+      });
+    }
+
     req.user = {
       userId: decoded.userId,
       email: decoded.email,
-      roles: decoded.roles.map(String),
+      roles,
     };
 
     next();
