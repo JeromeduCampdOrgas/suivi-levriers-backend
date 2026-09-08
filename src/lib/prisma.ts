@@ -32,4 +32,14 @@ const prisma = new PrismaClient({
   adapter,
 });
 
+prisma
+  .$connect()
+  .then(() => {
+    console.log("=== CONNEXION SUPABASE OK ===");
+  })
+  .catch((error) => {
+    console.error("=== ERREUR CONNEXION SUPABASE ===");
+    console.error(error);
+  });
+
 export default prisma;
