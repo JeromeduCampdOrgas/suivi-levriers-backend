@@ -58,7 +58,7 @@ model Dog {
   sex       Sex
   birthDate DateTime?
   weight    Float?
-  ICAD     String?
+  icad     String?
 
   ownerId String
   owner   User   @relation("DogOwner", fields: [ownerId], references: [id])
