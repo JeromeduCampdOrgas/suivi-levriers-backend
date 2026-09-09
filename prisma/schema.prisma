@@ -20,6 +20,15 @@ enum Sex {
   FEMALE
 }
 
+enum DogDocumentType {
+  PEDIGREE
+  PASSPORT
+  VACCINATION
+  MEDICAL
+  COMPETITION
+  OTHER
+}
+
 model User {
   id           String     @id @default(cuid())
   firstName    String
@@ -58,7 +67,7 @@ model Dog {
   sex       Sex
   birthDate DateTime?
   weight    Float?
-  icad     String?
+  icad      String?
 
   ownerId String
   owner   User   @relation("DogOwner", fields: [ownerId], references: [id])
@@ -67,6 +76,25 @@ model Dog {
 
   clubId String?
   club   Club?   @relation(fields: [clubId], references: [id])
+
+  documents DogDocument[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DogDocument {
+  id String @id @default(cuid())
+
+  dogId String
+  dog   Dog @relation(fields: [dogId], references: [id], onDelete: Cascade)
+
+  type DogDocumentType
+
+  originalName String
+  storagePath  String
+  mimeType     String
+  size         Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -88,3 +116,5 @@ model UserClub {
 
   @@unique([userId, clubId])
 }
+
+
