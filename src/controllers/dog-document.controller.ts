@@ -132,12 +132,27 @@ export async function uploadDogDocumentController(
     /**
      * Enregistrement du document en base.
      */
+    const extension = path.extname(req.file.originalname).toLowerCase();
+
+    const mimeTypeByExtension: Record<string, string> = {
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".png": "image/png",
+      ".webp": "image/webp",
+      ".pdf": "application/pdf",
+      ".xls": "application/vnd.ms-excel",
+      ".xlsx":
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    };
+
+    const mimeType = mimeTypeByExtension[extension] ?? req.file.mimetype;
+
     const document = await createDogDocument({
       dogId: id,
       type: type as DogDocumentType,
       originalName: req.file.originalname,
       storagePath,
-      mimeType: req.file.mimetype,
+      mimeType,
       size: req.file.size,
     });
 
