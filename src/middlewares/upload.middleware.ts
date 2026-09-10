@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
   },
 
   filename: (_req, file, cb) => {
-    const extension = path.extname(file.originalname);
+    const extension = path.extname(file.originalname).toLowerCase();
 
     const uniqueName = `${Date.now()}-${Math.round(
       Math.random() * 1_000_000
@@ -35,7 +35,7 @@ const storage = multer.diskStorage({
 });
 
 /**
- * Types de fichiers autorisés.
+ * Types MIME autorisés.
  */
 const allowedMimeTypes = [
   // Images
@@ -49,13 +49,42 @@ const allowedMimeTypes = [
   // Excel
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+
+  // Certains navigateurs / systèmes peuvent envoyer Excel
+  // avec un MIME type générique.
+  "application/octet-stream",
+];
+
+/**
+ * Extensions autorisées.
+ */
+const allowedExtensions = [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".pdf",
+  ".xls",
+  ".xlsx",
 ];
 
 /**
  * Vérification du type de fichier.
+ *
+ * On vérifie à la fois :
+ * - le MIME type fourni par le navigateur
+ * - l'extension réelle du fichier
+ *
+ * Cela évite de bloquer certains fichiers Excel lorsque
+ * le navigateur fournit un MIME type générique.
  */
 const fileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
-  if (!allowedMimeTypes.includes(file.mimetype)) {
+  const extension = path.extname(file.originalname).toLowerCase();
+
+  const mimeTypeAllowed = allowedMimeTypes.includes(file.mimetype);
+  const extensionAllowed = allowedExtensions.includes(extension);
+
+  if (!mimeTypeAllowed || !extensionAllowed) {
     return cb(
       new Error(
         "Type de fichier non autorisé. Formats acceptés : JPG, PNG, WEBP, PDF, XLS et XLSX."
@@ -69,7 +98,7 @@ const fileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
 /**
  * Configuration générale de l'upload.
  *
- * Limite actuelle : 10 Mo par fichier.
+ * Limite : 10 Mo par fichier.
  */
 export const uploadDocument = multer({
   storage,
