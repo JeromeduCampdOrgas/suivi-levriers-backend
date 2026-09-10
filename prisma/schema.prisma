@@ -21,6 +21,7 @@ enum Sex {
 }
 
 enum DogDocumentType {
+  ICAD
   PEDIGREE
   PASSPORT
   VACCINATION
