@@ -2,6 +2,21 @@ import prisma from "../lib/prisma";
 import type { UserRole, Sex } from "../generated/prisma/client";
 
 /**
+ * Champs User pouvant être exposés par l'API.
+ * Le passwordHash n'est volontairement jamais sélectionné.
+ */
+const safeUserSelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  roles: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+/**
  * Données nécessaires pour créer un lévrier.
  */
 export interface CreateDogData {
@@ -42,9 +57,13 @@ export async function getDogsForUser(userId: string, roles: UserRole[]) {
   if (roles.includes("ADMIN") || roles.includes("GUEST")) {
     return prisma.dog.findMany({
       include: {
-        owner: true,
+        owner: {
+          select: safeUserSelect,
+        },
         club: true,
-        trainers: true,
+        trainers: {
+          select: safeUserSelect,
+        },
       },
       orderBy: {
         name: "asc",
@@ -59,9 +78,13 @@ export async function getDogsForUser(userId: string, roles: UserRole[]) {
         ownerId: userId,
       },
       include: {
-        owner: true,
+        owner: {
+          select: safeUserSelect,
+        },
         club: true,
-        trainers: true,
+        trainers: {
+          select: safeUserSelect,
+        },
       },
       orderBy: {
         name: "asc",
@@ -80,9 +103,13 @@ export async function getDogsForUser(userId: string, roles: UserRole[]) {
         },
       },
       include: {
-        owner: true,
+        owner: {
+          select: safeUserSelect,
+        },
         club: true,
-        trainers: true,
+        trainers: {
+          select: safeUserSelect,
+        },
       },
       orderBy: {
         name: "asc",
@@ -114,9 +141,13 @@ export async function getDogByIdForUser(
         id: dogId,
       },
       include: {
-        owner: true,
+        owner: {
+          select: safeUserSelect,
+        },
         club: true,
-        trainers: true,
+        trainers: {
+          select: safeUserSelect,
+        },
       },
     });
   }
@@ -129,9 +160,13 @@ export async function getDogByIdForUser(
         ownerId: userId,
       },
       include: {
-        owner: true,
+        owner: {
+          select: safeUserSelect,
+        },
         club: true,
-        trainers: true,
+        trainers: {
+          select: safeUserSelect,
+        },
       },
     });
   }
@@ -148,9 +183,13 @@ export async function getDogByIdForUser(
         },
       },
       include: {
-        owner: true,
+        owner: {
+          select: safeUserSelect,
+        },
         club: true,
-        trainers: true,
+        trainers: {
+          select: safeUserSelect,
+        },
       },
     });
   }
@@ -209,9 +248,13 @@ export async function createDog(data: CreateDogData) {
       clubId: data.clubId ?? null,
     },
     include: {
-      owner: true,
+      owner: {
+        select: safeUserSelect,
+      },
       club: true,
-      trainers: true,
+      trainers: {
+        select: safeUserSelect,
+      },
     },
   });
 }
@@ -299,9 +342,13 @@ export async function updateDog(dogId: string, data: UpdateDogData) {
       }),
     },
     include: {
-      owner: true,
+      owner: {
+        select: safeUserSelect,
+      },
       club: true,
-      trainers: true,
+      trainers: {
+        select: safeUserSelect,
+      },
     },
   });
 }
@@ -399,9 +446,13 @@ export async function addDogTrainer(dogId: string, trainerId: string) {
       },
     },
     include: {
-      owner: true,
+      owner: {
+        select: safeUserSelect,
+      },
       club: true,
-      trainers: true,
+      trainers: {
+        select: safeUserSelect,
+      },
     },
   });
 }
@@ -422,9 +473,13 @@ export async function removeDogTrainer(dogId: string, trainerId: string) {
       },
     },
     include: {
-      owner: true,
+      owner: {
+        select: safeUserSelect,
+      },
       club: true,
-      trainers: true,
+      trainers: {
+        select: safeUserSelect,
+      },
     },
   });
 }
