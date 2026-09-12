@@ -20,6 +20,7 @@ import {
 import { authenticateToken } from "../middlewares/auth.middleware";
 import { uploadDocument } from "../middlewares/upload.middleware";
 
+import { extractIcadOcrController } from "../controllers/icad-ocr.controller";
 const router = Router();
 
 /**
@@ -27,6 +28,12 @@ const router = Router();
  * LÉVRIERS
  * =========================================================
  */
+router.post(
+  "/ocr/icad",
+  authenticateToken,
+  uploadDocument.single("file"),
+  extractIcadOcrController
+);
 
 // Liste des lévriers accessibles par l'utilisateur connecté
 router.get("/", authenticateToken, getDogs);
