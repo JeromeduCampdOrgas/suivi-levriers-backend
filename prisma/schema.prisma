@@ -62,13 +62,16 @@ model Club {
 }
 
 model Dog {
-  id        String    @id @default(cuid())
-  name      String
-  breed     String
-  sex       Sex
-  birthDate DateTime?
-  weight    Float?
-  icad      String?
+  id               String    @id @default(cuid())
+  name             String
+  breed            String
+  category         String?
+  coat             String?
+  distinctiveMark  String?
+  sex              Sex
+  birthDate        DateTime?
+  weight           Float?
+  icad             String?
 
   ownerId String
   owner   User   @relation("DogOwner", fields: [ownerId], references: [id])
@@ -76,7 +79,7 @@ model Dog {
   trainers User[] @relation("DogTrainers")
 
   clubId String?
-  club   Club?   @relation(fields: [clubId], references: [id])
+  club   Club? @relation(fields: [clubId], references: [id])
 
   documents DogDocument[]
 

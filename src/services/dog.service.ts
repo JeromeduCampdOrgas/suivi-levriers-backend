@@ -22,6 +22,9 @@ const safeUserSelect = {
 export interface CreateDogData {
   name: string;
   breed: string;
+  category?: string | null;
+  coat?: string | null;
+  distinctiveMark?: string | null;
   sex: Sex;
   birthDate?: Date | null;
   weight?: number | null;
@@ -36,6 +39,9 @@ export interface CreateDogData {
 export interface UpdateDogData {
   name?: string;
   breed?: string;
+  category?: string | null;
+  coat?: string | null;
+  distinctiveMark?: string | null;
   sex?: Sex;
   birthDate?: Date | null;
   weight?: number | null;
@@ -240,6 +246,9 @@ export async function createDog(data: CreateDogData) {
     data: {
       name: data.name,
       breed: data.breed,
+      category: data.category ?? null,
+      coat: data.coat ?? null,
+      distinctiveMark: data.distinctiveMark ?? null,
       sex: data.sex,
       birthDate: data.birthDate ?? null,
       weight: data.weight ?? null,
@@ -321,6 +330,15 @@ export async function updateDog(dogId: string, data: UpdateDogData) {
       }),
       ...(data.breed !== undefined && {
         breed: data.breed,
+      }),
+      ...(data.category !== undefined && {
+        category: data.category,
+      }),
+      ...(data.coat !== undefined && {
+        coat: data.coat,
+      }),
+      ...(data.distinctiveMark !== undefined && {
+        distinctiveMark: data.distinctiveMark,
       }),
       ...(data.sex !== undefined && {
         sex: data.sex,

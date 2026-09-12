@@ -98,8 +98,19 @@ export async function createDogController(
       });
     }
 
-    const { name, breed, sex, birthDate, weight, icad, ownerId, clubId } =
-      req.body;
+    const {
+      name,
+      breed,
+      category,
+      coat,
+      distinctiveMark,
+      sex,
+      birthDate,
+      weight,
+      icad,
+      ownerId,
+      clubId,
+    } = req.body;
 
     // Validation des champs obligatoires
     if (
@@ -171,6 +182,33 @@ export async function createDogController(
       }
     }
 
+    // Validation des champs ICAD
+    if (
+      category !== undefined &&
+      category !== null &&
+      typeof category !== "string"
+    ) {
+      return res.status(400).json({
+        message: "Catégorie invalide.",
+      });
+    }
+
+    if (coat !== undefined && coat !== null && typeof coat !== "string") {
+      return res.status(400).json({
+        message: "Robe invalide.",
+      });
+    }
+
+    if (
+      distinctiveMark !== undefined &&
+      distinctiveMark !== null &&
+      typeof distinctiveMark !== "string"
+    ) {
+      return res.status(400).json({
+        message: "Signe particulier invalide.",
+      });
+    }
+
     let parsedBirthDate: Date | null = null;
 
     if (birthDate !== undefined && birthDate !== null && birthDate !== "") {
@@ -198,6 +236,12 @@ export async function createDogController(
     const dog = await createDog({
       name: name.trim(),
       breed: breed.trim(),
+      category: typeof category === "string" ? category.trim() || null : null,
+      coat: typeof coat === "string" ? coat.trim() || null : null,
+      distinctiveMark:
+        typeof distinctiveMark === "string"
+          ? distinctiveMark.trim() || null
+          : null,
       sex: sex as Sex,
       birthDate: parsedBirthDate,
       weight: parsedWeight,
@@ -249,8 +293,19 @@ export async function updateDogController(
       });
     }
 
-    const { name, breed, sex, birthDate, weight, icad, ownerId, clubId } =
-      req.body;
+    const {
+      name,
+      breed,
+      category,
+      coat,
+      distinctiveMark,
+      sex,
+      birthDate,
+      weight,
+      icad,
+      ownerId,
+      clubId,
+    } = req.body;
 
     if (
       name !== undefined &&
@@ -267,6 +322,32 @@ export async function updateDogController(
     ) {
       return res.status(400).json({
         message: "Race invalide.",
+      });
+    }
+
+    if (
+      category !== undefined &&
+      category !== null &&
+      typeof category !== "string"
+    ) {
+      return res.status(400).json({
+        message: "Catégorie invalide.",
+      });
+    }
+
+    if (coat !== undefined && coat !== null && typeof coat !== "string") {
+      return res.status(400).json({
+        message: "Robe invalide.",
+      });
+    }
+
+    if (
+      distinctiveMark !== undefined &&
+      distinctiveMark !== null &&
+      typeof distinctiveMark !== "string"
+    ) {
+      return res.status(400).json({
+        message: "Signe particulier invalide.",
       });
     }
 
@@ -370,6 +451,18 @@ export async function updateDogController(
       }),
       ...(breed !== undefined && {
         breed: breed.trim(),
+      }),
+      ...(category !== undefined && {
+        category: typeof category === "string" ? category.trim() || null : null,
+      }),
+      ...(coat !== undefined && {
+        coat: typeof coat === "string" ? coat.trim() || null : null,
+      }),
+      ...(distinctiveMark !== undefined && {
+        distinctiveMark:
+          typeof distinctiveMark === "string"
+            ? distinctiveMark.trim() || null
+            : null,
       }),
       ...(sex !== undefined && {
         sex: sex as Sex,
