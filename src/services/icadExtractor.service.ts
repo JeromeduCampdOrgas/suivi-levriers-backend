@@ -938,18 +938,8 @@ function extractStructuredIcadName(text: string): IcadField {
   const lines = normalizeLines(text);
 
   for (const line of lines) {
-    /*
-     * Le libellé NOM doit être un mot indépendant.
-     *
-     * Le lookbehind empêche notamment de détecter
-     * le "NOM" situé à la fin de "PRENOM".
-     *
-     * Le séparateur de "NOM D'USAGE" peut être :
-     * - une apostrophe
-     * - un espace
-     */
     const match = line.match(
-      /(?<![A-Z])NOM\s+([A-Z][A-Z' -]*?)(?=\s+NOM\s+D(?:'| )USAGE\b|$)/
+      /(?<![A-Z])NOM\s+([A-Z][A-Z' -]*?)(?=\s+NOM\s*D(?:'| )USAGE\b|$)/
     );
 
     if (match) {
@@ -1000,15 +990,49 @@ function extractStructuredIcadRace(text: string): IcadField {
   for (const line of lines) {
     const match = line.match(/\bRACE\s*\/\s*APPARENCE\s+RACIALE\s+(.+)$/);
 
-    if (match) {
-      const value = cleanValue(match[1]);
+    if (!match) {
+      continue;
+    }
 
-      if (value && isPlausibleTextValue(value, 80)) {
-        return {
-          value,
-          confidence: 0.95,
-        };
-      }
+    let value = match[1];
+
+    /*
+     * Le OCR ajoute parfois un caractère parasite
+     * isolé en fin de ligne.
+     */
+    value = value.replace(/\s+[A-Z]$/, "");
+
+    value = cleanValue(value);
+
+    if (value && isPlausibleTextValue(value, 80)) {
+      return {
+        value,
+        confidence: 0.95,
+      };
+    }
+  }
+
+  return {
+    confidence: 0,
+  };
+}
+function extractStructuredIcadColor(text: string): IcadField {
+  const lines = normalizeLines(text);
+
+  for (const line of lines) {
+    const match = line.match(/\bROBE\s+([A-Z]+)/);
+
+    if (!match) {
+      continue;
+    }
+
+    const value = cleanValue(match[1]);
+
+    if (value && isPlausibleTextValue(value, 40)) {
+      return {
+        value,
+        confidence: 0.95,
+      };
     }
   }
 
@@ -1199,7 +1223,11 @@ export function extractIcadData(rawText: string): IcadExtractionResult {
    * ==========================================================
    */
 
-  const couleur = extractTextField(rawText, "couleur");
+  let couleur = extractStructuredIcadColor(rawText);
+
+  if (!couleur.value) {
+    couleur = extractTextField(rawText, "couleur");
+  }
 
   /*
    * ==========================================================
@@ -1207,8 +1235,36 @@ export function extractIcadData(rawText: string): IcadExtractionResult {
    * ==========================================================
    */
 
-  const paysNaissance = extractPaysNaissance(rawText);
+  let paysNaissance = extractStructuredIcadPaysNaissance(rawText);
 
+  if (!paysNaissance.value) {
+    paysNaissance = extractPaysNaissance(rawText);
+  }
+
+  function extractStructuredIcadPaysNaissance(text: string): IcadField {
+    const lines = normalizeLines(text);
+
+    for (const line of lines) {
+      const match = line.match(/\bPAYS\s*DE\s*NAISSANCE\s+([A-Z]+)/);
+
+      if (!match) {
+        continue;
+      }
+
+      const value = cleanValue(match[1]);
+
+      if (value && isPlausibleTextValue(value, 40)) {
+        return {
+          value,
+          confidence: 0.95,
+        };
+      }
+    }
+
+    return {
+      confidence: 0,
+    };
+  }
   /*
    * ==========================================================
    * NUMÉRO D'IDENTIFICATION ICAD
