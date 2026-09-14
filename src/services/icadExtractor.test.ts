@@ -562,157 +562,72 @@ FEMELLE
     expect(result.data.nom.confidence).toBeGreaterThanOrEqual(0.8);
   });
 });
-/*describe("V3.2 - inspection des lignes OCR carte 1", () => {
-  it("doit afficher chaque ligne avec son index", () => {
-    const text = `
-! OTOZ/vO/ET | ZONVSSIVN 39 3LVG
-J1VH 3X3s
-| HIMNOLLYVd INDIS
-| JgO%
-manon orzze O91Y5 Z0va
-NVHOIW SJdd SIC3NUS IrJODALVD
-YVT1350 INOTIVIOVUYL 3WNW _609£9SCOOOOTT86 NOILVIIHILN3GI
-| YNaLN213G N3IHD
+describe("V3.2 - extraction structurée carte ICAD réelle", () => {
+  const realIcadOcr = `
+I-CAD CARTE D’IDENTIFICATION
+DE VOTRE ANIMAL
+INSERT 941000027606362 DATE 28/03/2023
+DATE DE NAISSANCE 05/07/2022
+CIVILITÉ Madame PRÉNOM Celia ; _/ PAYS DE NAISSANCE Espagne
+NOM Traballoni NOM D'USAGE Diego
+ADRESSE 5 Rue Des Pres Michau
+SEXE Mâle - STÉRILISÉ Oui
+RACE/APPARENCE RACIALE Levrier Espagnol
+PAYS France
+ROBE Bringee
 `;
 
-    console.log("\n========== LIGNES OCR CARTE 1 ==========");
+  it("doit extraire correctement le nom", () => {
+    const result = extractIcadData(realIcadOcr);
 
-    text
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .forEach((line, index) => {
-        console.log(`${index} : ${line}`);
-      });
+    expect(result.data.nom.value).toBe("TRABALLONI");
+  });
 
-    console.log("=========================================\n");
+  it("doit extraire correctement le prénom", () => {
+    const result = extractIcadData(realIcadOcr);
 
-    expect(text).toBeTruthy();
+    expect(result.data.prenom.value).toBe("CELIA");
+  });
+
+  it("doit extraire correctement la race", () => {
+    const result = extractIcadData(realIcadOcr);
+
+    expect(result.data.race.value).toBe("LEVRIER ESPAGNOL");
+  });
+
+  it("doit extraire correctement la couleur", () => {
+    const result = extractIcadData(realIcadOcr);
+
+    expect(result.data.couleur.value).toBe("BRINGEE");
+  });
+
+  it("doit extraire correctement le pays de naissance", () => {
+    const result = extractIcadData(realIcadOcr);
+
+    expect(result.data.paysNaissance.value).toBe("ESPAGNE");
+  });
+
+  it("doit utiliser la bonne date de naissance", () => {
+    const result = extractIcadData(realIcadOcr);
+
+    expect(result.data.dateNaissance.value).toBe("05/07/2022");
+  });
+
+  it("ne doit pas confondre la date INSERT avec la date de naissance", () => {
+    const result = extractIcadData(realIcadOcr);
+
+    expect(result.data.dateNaissance.value).not.toBe("28/03/2023");
+  });
+
+  it("doit extraire correctement le numéro ICAD", () => {
+    const result = extractIcadData(realIcadOcr);
+
+    expect(result.data.numeroIdentification.value).toBe("941000027606362");
+  });
+
+  it("doit extraire correctement le sexe", () => {
+    const result = extractIcadData(realIcadOcr);
+
+    expect(result.data.sexe.value).toBe("M");
   });
 });
-describe("V3.2 - diagnostic approfondi des libellés inversés carte 1", () => {
-  it("doit comparer les lignes OCR avec plusieurs transformations", () => {
-    const levenshtein = (a: string, b: string): number => {
-      const matrix: number[][] = [];
-
-      for (let i = 0; i <= b.length; i++) {
-        matrix[i] = [i];
-      }
-
-      for (let j = 0; j <= a.length; j++) {
-        matrix[0][j] = j;
-      }
-
-      for (let i = 1; i <= b.length; i++) {
-        for (let j = 1; j <= a.length; j++) {
-          if (b.charAt(i - 1) === a.charAt(j - 1)) {
-            matrix[i][j] = matrix[i - 1][j - 1];
-          } else {
-            matrix[i][j] = Math.min(
-              matrix[i - 1][j - 1] + 1,
-              matrix[i][j - 1] + 1,
-              matrix[i - 1][j] + 1
-            );
-          }
-        }
-      }
-
-      return matrix[b.length][a.length];
-    };
-
-    const normalize = (value: string): string =>
-      value
-        .toUpperCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^A-Z0-9 ]/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-
-    const reverseCharacters = (value: string): string =>
-      value.split("").reverse().join("");
-
-    const reverseWords = (value: string): string =>
-      value.split(" ").reverse().join(" ");
-
-    const similarity = (a: string, b: string): number => {
-      const longueur = Math.max(a.length, b.length);
-
-      if (longueur === 0) {
-        return 0;
-      }
-
-      return 1 - levenshtein(a, b) / longueur;
-    };
-
-    const lignes = [
-      "HIMNOLLYVd INDIS",
-      "JgO%",
-      "manon orzze O91Y5 Z0va",
-      "NVHOIW SJdd SIC3NUS IrJODALVD",
-    ];
-
-    const labels = {
-      nom: ["NOM", "NOM DU CHIEN", "NOM DE L ANIMAL"],
-      prenom: ["PRENOM", "PRÉNOM"],
-      race: ["RACE", "ESPECE RACE", "ESPÈCE RACE"],
-      couleur: ["COULEUR", "ROBE"],
-      paysNaissance: ["PAYS DE NAISSANCE", "PAYS NAISSANCE"],
-      dateIdentification: ["DATE D IDENTIFICATION", "DATE IDENTIFICATION"],
-    };
-
-    console.log("\n========== DIAGNOSTIC APPROFONDI ==========");
-
-    for (const [index, ligneBrute] of lignes.entries()) {
-      const ligne = normalize(ligneBrute);
-
-      console.log(`\nLigne ${index + 2} : ${ligneBrute}`);
-      console.log(`Normalisée : ${ligne}`);
-      console.log(`Inversée caractères : ${reverseCharacters(ligne)}`);
-      console.log(`Mots inversés : ${reverseWords(ligne)}`);
-
-      const resultats: Array<{
-        champ: string;
-        label: string;
-        direct: number;
-        caracteresInverses: number;
-        motsInverses: number;
-      }> = [];
-
-      for (const [champ, champLabels] of Object.entries(labels)) {
-        for (const labelBrut of champLabels) {
-          const label = normalize(labelBrut);
-
-          resultats.push({
-            champ,
-            label: labelBrut,
-            direct: similarity(ligne, label),
-            caracteresInverses: similarity(reverseCharacters(ligne), label),
-            motsInverses: similarity(reverseWords(ligne), label),
-          });
-        }
-      }
-
-      resultats
-        .sort(
-          (a, b) =>
-            Math.max(b.direct, b.caracteresInverses, b.motsInverses) -
-            Math.max(a.direct, a.caracteresInverses, a.motsInverses)
-        )
-        .slice(0, 5)
-        .forEach((resultat) => {
-          console.log(
-            `  ${resultat.champ.padEnd(20)} ` +
-              `→ ${resultat.label.padEnd(25)} ` +
-              `direct=${resultat.direct.toFixed(2)} ` +
-              `inverse=${resultat.caracteresInverses.toFixed(2)} ` +
-              `mots=${resultat.motsInverses.toFixed(2)}`
-          );
-        });
-    }
-
-    console.log("\n============================================\n");
-
-    expect(lignes.length).toBe(4);
-  });
-});*/
