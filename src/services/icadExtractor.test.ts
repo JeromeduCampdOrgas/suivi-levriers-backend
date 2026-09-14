@@ -631,3 +631,46 @@ ROBE Bringee
     expect(result.data.sexe.value).toBe("M");
   });
 });
+describe("V3.3 - confiance du numéro ICAD avec contexte INSERT", () => {
+  it("doit donner une confiance élevée au numéro précédé de INSERT", () => {
+    const ocr = `
+      I-CAD CARTE D'IDENTIFICATION
+      INSERT 941000027606362 DATE 28/03/2023
+      NOM Traballoni
+    `;
+
+    const result = extractIcadData(ocr);
+
+    expect(result.data.numeroIdentification.value).toBe("941000027606362");
+
+    expect(result.data.numeroIdentification.confidence).toBeGreaterThanOrEqual(
+      0.9
+    );
+  });
+
+  it("doit conserver une confiance faible pour un numéro ICAD isolé", () => {
+    const ocr = `
+      NOM Traballoni
+      941000027606362
+    `;
+
+    const result = extractIcadData(ocr);
+
+    expect(result.data.numeroIdentification.value).toBe("941000027606362");
+
+    expect(result.data.numeroIdentification.confidence).toBeLessThan(0.9);
+  });
+
+  it("ne doit pas considérer un autre nombre de 15 chiffres comme un INSERT", () => {
+    const ocr = `
+      DATE DE NAISSANCE 05/07/2022
+      123456789012345
+    `;
+
+    const result = extractIcadData(ocr);
+
+    expect(result.data.numeroIdentification.value).toBe("123456789012345");
+
+    expect(result.data.numeroIdentification.confidence).toBeLessThan(0.9);
+  });
+});

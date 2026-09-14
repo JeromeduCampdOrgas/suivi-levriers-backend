@@ -1040,6 +1040,23 @@ function extractStructuredIcadColor(text: string): IcadField {
     confidence: 0,
   };
 }
+function hasStrongIcadNumberContext(text: string): boolean {
+  const lines = normalizeLines(text);
+
+  for (const line of lines) {
+    /*
+     * INSERT est le libellé réellement présent sur la carte ICAD
+     * devant le numéro électronique.
+     *
+     * On exige que INSERT soit sur la même ligne que le numéro.
+     */
+    if (/\bINSERT\b/.test(line) && /\b\d{15}\b/.test(line)) {
+      return true;
+    }
+  }
+
+  return false;
+}
 export function extractIcadData(rawText: string): IcadExtractionResult {
   const normalizedText = normalizeText(rawText);
 
@@ -1279,15 +1296,19 @@ export function extractIcadData(rawText: string): IcadExtractionResult {
 
   const identification = extractIdentificationNumber(rawText);
 
+  const strongIdentificationContext = hasStrongIcadNumberContext(rawText);
+
   if (identification && identificationLabel) {
     numeroIdentification = {
       value: identification,
       confidence: Math.min(0.95, identificationLabel.confidence),
     };
+  } else if (identification && strongIdentificationContext) {
+    numeroIdentification = {
+      value: identification,
+      confidence: 0.95,
+    };
   } else if (identification) {
-    /*
-     * Numéro trouvé mais sans contexte fiable.
-     */
     numeroIdentification = {
       value: identification,
       confidence: 0.55,
