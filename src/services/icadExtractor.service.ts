@@ -938,28 +938,18 @@ function extractPaysNaissance(text: string): IcadField {
 function extractStructuredIcadName(text: string): IcadField {
   const lines = normalizeLines(text);
 
-  /*
-   * Sur une carte ICAD :
-   *
-   * NOM Traballoni NOM D'USAGE Diego
-   *
-   * NOM = nom du propriétaire
-   * NOM D'USAGE = nom du lévrier
-   *
-   * Pour le modèle Dog, le champ "nom" doit donc
-   * correspondre au NOM D'USAGE.
-   */
-
   for (const line of lines) {
     const match = line.match(
       /\bNOM\s*D(?:'| )USAGE\s+([A-Z][A-Z' -]*?)(?=\s+(?:ADRESSE|SEXE|DATE|PAYS|RACE|ROBE|COULEUR)\b|$)/
     );
 
-    if (!match) {
-      continue;
-    }
+    if (!match) continue;
 
-    const value = cleanValue(match[1]);
+    let value = cleanValue(match[1]);
+
+    // L'OCR peut ajouter une lettre isolée après le nom.
+    // Exemple : "NOM D'USAGE DIEGO E" → "DIEGO"
+    value = value.replace(/\s+[A-Z]$/, "").trim();
 
     if (value && isPlausibleTextValue(value, 80)) {
       return {
