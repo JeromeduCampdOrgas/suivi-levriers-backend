@@ -577,10 +577,9 @@ PAYS France
 ROBE Bringee
 `;
 
-  it("doit extraire correctement le nom", () => {
+  it("doit extraire le nom d'usage du lévrier", () => {
     const result = extractIcadData(realIcadOcr);
-
-    expect(result.data.nom.value).toBe("TRABALLONI");
+    expect(result.data.nom.value).toBe("DIEGO");
   });
 
   it("doit extraire correctement le prénom", () => {
@@ -673,4 +672,21 @@ describe("V3.3 - confiance du numéro ICAD avec contexte INSERT", () => {
 
     expect(result.data.numeroIdentification.confidence).toBeLessThan(0.9);
   });
+});
+
+it("extrait le nom du lévrier depuis NOM D'USAGE et non le nom du propriétaire", () => {
+  const ocrText = `
+    CIVILITÉ Madame PRÉNOM Celia
+    PAYS DE NAISSANCE Espagne
+    NOM Traballoni NOM D'USAGE Diego
+    SEXE Mâle
+    RACE/APPARENCE RACIALE Levrier Espagnol
+    ROBE Bringee
+  `;
+
+  const result = extractIcadData(ocrText);
+
+  expect(result.data.nom.value).toBe("DIEGO");
+  expect(result.data.prenom.value).toBe("CELIA");
+  expect(result.data.sexe.value).toBe("M");
 });

@@ -934,23 +934,38 @@ function extractPaysNaissance(text: string): IcadField {
 /* ============================================================
  * EXTRACTION PRINCIPALE
  * ========================================================== */
+
 function extractStructuredIcadName(text: string): IcadField {
   const lines = normalizeLines(text);
 
+  /*
+   * Sur une carte ICAD :
+   *
+   * NOM Traballoni NOM D'USAGE Diego
+   *
+   * NOM = nom du propriétaire
+   * NOM D'USAGE = nom du lévrier
+   *
+   * Pour le modèle Dog, le champ "nom" doit donc
+   * correspondre au NOM D'USAGE.
+   */
+
   for (const line of lines) {
     const match = line.match(
-      /(?<![A-Z])NOM\s+([A-Z][A-Z' -]*?)(?=\s+NOM\s*D(?:'| )USAGE\b|$)/
+      /\bNOM\s*D(?:'| )USAGE\s+([A-Z][A-Z' -]*?)(?=\s+(?:ADRESSE|SEXE|DATE|PAYS|RACE|ROBE|COULEUR)\b|$)/
     );
 
-    if (match) {
-      const value = cleanValue(match[1]);
+    if (!match) {
+      continue;
+    }
 
-      if (value && isPlausibleTextValue(value, 80)) {
-        return {
-          value,
-          confidence: 0.95,
-        };
-      }
+    const value = cleanValue(match[1]);
+
+    if (value && isPlausibleTextValue(value, 80)) {
+      return {
+        value,
+        confidence: 0.95,
+      };
     }
   }
 
@@ -958,7 +973,6 @@ function extractStructuredIcadName(text: string): IcadField {
     confidence: 0,
   };
 }
-
 function extractStructuredIcadPrenom(text: string): IcadField {
   const lines = normalizeLines(text);
 

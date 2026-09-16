@@ -19,6 +19,79 @@ import {
 import prisma from "../lib/prisma";
 
 /**
+ * Convertit une date reçue par l'API en Date.
+ *
+ * Formats acceptés :
+ * - JJ/MM/AAAA
+ * - JJ-MM-AAAA
+ * - AAAA-MM-JJ
+ *
+ * Pour les dates françaises, on construit explicitement
+ * la date afin d'éviter l'interprétation américaine de JavaScript.
+ */
+function parseDogDate(value: unknown): Date | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  /*
+   * Format français : JJ/MM/AAAA ou JJ-MM-AAAA
+   */
+  let match = trimmed.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+
+  if (match) {
+    const day = Number(match[1]);
+    const month = Number(match[2]);
+    const year = Number(match[3]);
+
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    if (
+      date.getUTCFullYear() !== year ||
+      date.getUTCMonth() !== month - 1 ||
+      date.getUTCDate() !== day
+    ) {
+      return null;
+    }
+
+    return date;
+  }
+
+  /*
+   * Format ISO : AAAA-MM-JJ
+   */
+  match = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+
+  if (match) {
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    if (
+      date.getUTCFullYear() !== year ||
+      date.getUTCMonth() !== month - 1 ||
+      date.getUTCDate() !== day
+    ) {
+      return null;
+    }
+
+    return date;
+  }
+
+  /*
+   * Les autres formats sont refusés volontairement.
+   */
+  return null;
+}
+/**
  * GET /api/dogs
  *
  * Liste des lévriers accessibles à l'utilisateur.
@@ -212,15 +285,14 @@ export async function createDogController(
     let parsedBirthDate: Date | null = null;
 
     if (birthDate !== undefined && birthDate !== null && birthDate !== "") {
-      parsedBirthDate = new Date(birthDate);
+      parsedBirthDate = parseDogDate(birthDate);
 
-      if (Number.isNaN(parsedBirthDate.getTime())) {
+      if (!parsedBirthDate) {
         return res.status(400).json({
           message: "Date de naissance invalide.",
         });
       }
     }
-
     let parsedWeight: number | null = null;
 
     if (weight !== undefined && weight !== null && weight !== "") {
@@ -419,9 +491,9 @@ export async function updateDogController(
       if (birthDate === null || birthDate === "") {
         parsedBirthDate = null;
       } else {
-        parsedBirthDate = new Date(birthDate);
+        parsedBirthDate = parseDogDate(birthDate);
 
-        if (Number.isNaN(parsedBirthDate.getTime())) {
+        if (!parsedBirthDate) {
           return res.status(400).json({
             message: "Date de naissance invalide.",
           });
