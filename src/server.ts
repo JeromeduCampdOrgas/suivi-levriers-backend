@@ -7,6 +7,8 @@ import dogRoutes from "./routes/dog.routes";
 import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
 
+import trainingRoutes from "./routes/training.routes";
+
 dotenv.config();
 
 const app = express();
@@ -40,6 +42,9 @@ app.use("/api/users", userRoutes);
 
 /*** Dog Routes */
 app.use("/api/dogs", dogRoutes);
+
+/*** Trainings Routes */
+app.use("/api/trainings", trainingRoutes);
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`API démarrée sur le port ${PORT}`);

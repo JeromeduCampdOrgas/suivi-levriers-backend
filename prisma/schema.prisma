@@ -29,6 +29,28 @@ enum DogDocumentType {
   COMPETITION
   OTHER
 }
+enum TrainingType {
+  CYNODROME
+  PVL
+  BIKE
+  SPRINT
+  WALK
+}
+
+enum WeatherCondition {
+  SUNNY
+  CLOUDY
+  RAINY
+  NIGHT
+}
+
+enum TrainingReaction {
+  EXCELLENT
+  VERY_GOOD
+  GOOD
+  AVERAGE
+  POOR
+}
 
 model User {
   id           String     @id @default(cuid())
@@ -43,7 +65,7 @@ model User {
   trainedDogs Dog[] @relation("DogTrainers")
 
   clubLinks UserClub[]
-
+  createdTrainings Training[] @relation("TrainingCreator")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -77,7 +99,7 @@ model Dog {
   owner   User   @relation("DogOwner", fields: [ownerId], references: [id])
 
   trainers User[] @relation("DogTrainers")
-
+  trainingResults TrainingResult[]
   clubId String?
   club   Club? @relation(fields: [clubId], references: [id])
 
@@ -120,5 +142,52 @@ model UserClub {
 
   @@unique([userId, clubId])
 }
+model Training {
+  id String @id @default(cuid())
 
+  date DateTime
+
+  location String
+  terrain String
+
+  type TrainingType
+
+  distanceMeters Float
+
+  weather WeatherCondition
+  temperature Float?
+
+  notes String?
+
+  createdById String
+  createdBy User @relation("TrainingCreator", fields: [createdById], references: [id])
+
+  results TrainingResult[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TrainingResult {
+  id String @id @default(cuid())
+
+  trainingId String
+  training Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+
+  dogId String
+  dog Dog @relation(fields: [dogId], references: [id])
+
+  durationSeconds Float
+
+  motivation Int
+
+  reaction TrainingReaction?
+
+  observations String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([trainingId, dogId])
+}
 
